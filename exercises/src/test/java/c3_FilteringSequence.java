@@ -1,11 +1,7 @@
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import reactor.util.function.Tuple2;
-
-import java.util.HashSet;
-import java.util.stream.Collectors;
 
 /**
  * Sequence may produce many elements, but we are not always interested in all of them. In this chapter we will learn
