@@ -2,6 +2,7 @@ import org.junit.jupiter.api.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import reactor.util.function.Tuple2;
 
 import java.util.HashSet;
 import java.util.stream.Collectors;
@@ -46,8 +47,8 @@ public class c3_FilteringSequence extends FilteringSequenceBase {
     @Test
     public void needle_in_a_haystack() {
         Flux<String> strings = mashed_data_service()
-                .filter(n-> n instanceof String)
-                .map(Object::toString);
+                .ofType(String.class)
+                .log();
 
                 //todo: change this line only
                 ;
