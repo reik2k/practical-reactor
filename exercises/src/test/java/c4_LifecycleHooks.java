@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 
 /**
@@ -146,7 +148,8 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
     public void terminator() {
         AtomicInteger hooksTriggeredCounter = new AtomicInteger(0);
 
-        Flux<Integer> temperatureFlux = room_temperature_service()
+        Flux<Integer> temperatureFlux = room_temperature_service().log()
+                .doOnTerminate(hooksTriggeredCounter::getAndIncrement);
                 //todo: change this line only
                 ;
 
@@ -162,7 +165,7 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
                     .expectError()
                     .verify();
 
-        Assertions.assertEquals(hooksTriggeredCounter.get(), 2);
+        Assertions.assertEquals(2, hooksTriggeredCounter.get());
     }
 
     /**
@@ -175,6 +178,7 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
         AtomicInteger hooksTriggeredCounter = new AtomicInteger(0);
 
         Flux<Integer> temperatureFlux = room_temperature_service()
+                .doFinally((n)->hooksTriggeredCounter.getAndIncrement())
                 //todo: change this line only
                 ;
 
@@ -207,7 +211,7 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
                                  .doFirst(() -> sideEffects.add("one"));
 
         List<String> orderOfExecution =
-                Arrays.asList("todo", "todo", "todo"); //todo: change this line only
+                Arrays.asList("one", "two", "three"); //todo: change this line only
 
         StepVerifier.create(just)
                     .expectNext(true)
@@ -230,7 +234,10 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
     public void one_to_rule_them_all() {
         CopyOnWriteArrayList<String> signals = new CopyOnWriteArrayList<>();
 
-        Flux<Integer> flux = Flux.just(1, 2, 3)
+        Flux<Integer> flux = Flux.just(1, 2, 3).log().doOnEach(s-> {
+        if(s.isOnNext()) signals.add("ON_NEXT");
+        if(s.isOnComplete()) signals.add( "ON_COMPLETE");
+        })
                 //todo: change this line only
                 ;
 
@@ -238,6 +245,6 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
                     .expectNextCount(3)
                     .verifyComplete();
 
-        Assertions.assertEquals(signals, Arrays.asList("ON_NEXT", "ON_NEXT", "ON_NEXT", "ON_COMPLETE"));
+        Assertions.assertEquals(Arrays.asList("ON_NEXT", "ON_NEXT", "ON_NEXT", "ON_COMPLETE"), signals);
     }
 }
